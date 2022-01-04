@@ -4,24 +4,94 @@ import facebook from "../assets/images/facebook.svg";
 import google from "../assets/images/google.svg";
 import linkedin from "../assets/images/linkedin.svg";
 import "./Auth.scss";
+import { auth, db } from "../config/firebase";
+import {
+  addDoc,
+  collection,
+  doc,
+  setDoc,
+  Timestamp,
+  updateDoc,
+} from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
+import Notify from "./Extras/Notify";
+import { LoadingSpinner } from "./Extras/LoadingSpinner";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 const AuthComponent = () => {
-  const [login, setLogin] = useState(false);
-  const [signInForm, setSignInForm] = useState({
+  const [isLogin, setIsLogin] = useState(true);
+  const [authForm, setAuthForm] = useState({
+    name: "",
     email: "",
     password: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const { name, email, password } = authForm;
+
+  const handleChange = (e) => {
+    setAuthForm({ ...authForm, [e.target.name]: e.target.value });
+  };
+
+  async function signUpLogic() {
+    const colRef = collection(db, "users");
+    const result = await createUserWithEmailAndPassword(auth, email, password);
+    // await setDoc(doc(db, "users", result.user.uid), {
+    //   uid: result.user.uid,
+    //   name,
+    //   email,
+    //   createdAt: Timestamp.fromDate(new Date()),
+    //   isOnline: true,
+    // });
+    await addDoc(colRef, {
+      uid: result.user.uid,
+      name,
+      email,
+      createdAt: Timestamp.fromDate(new Date()),
+      isOnline: true,
+    });
+    console.log(result);
+  }
+  async function signInLogic() {
+    const result = await signInWithEmailAndPassword(auth, email, password);
+
+    await updateDoc(doc(db, "users", result.user.uid), {
+      isOnline: true,
+    });
+    console.log(result);
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    if (!authForm.email || !authForm.password)
+      return setError("email and password fields are required");
+    setIsLoading(true);
+
+    try {
+      if (!isLogin) await signInLogic();
+      if (isLogin) await signUpLogic();
+      setIsLoading(false);
+      setError(null);
+      if (!error) navigate("/");
+    } catch (error) {
+      setIsLoading(false);
+      console.log(error, "here");
+      setError(error.message);
+    }
+  }
   return (
     <div className="login">
       <div
         className={`login__colored-container ${
-          login
+          isLogin
             ? "login__colored-container--left"
             : "login__colored-container--right"
         }`}
       ></div>
       <div
         className={`login__welcome-back ${
-          login
+          isLogin
             ? "login__welcome-back--active"
             : "login__welcome-back--inactive"
         }`}
@@ -30,9 +100,9 @@ const AuthComponent = () => {
           <img
             className="login__welcome-back__logo-container--image"
             src={logo}
-            alt="Budwriter"
+            alt="Dmmee logo"
           />
-          Budwriter
+          Dmmee
         </div>
         <div className="login__welcome-back__main-container">
           <div className="login__welcome-back__main-container__text-container">
@@ -45,7 +115,7 @@ const AuthComponent = () => {
           </div>
           <div
             onClick={() => {
-              setLogin(!login);
+              setIsLogin(!isLogin);
             }}
             className="login__welcome-back__main-container__button-container"
           >
@@ -55,13 +125,13 @@ const AuthComponent = () => {
       </div>
       <div
         className={`login__create-container ${
-          login
+          isLogin
             ? "login__create-container--active"
             : "login__create-container--inactive"
         }`}
       >
         Create Account
-        <div className="login__create-container__social-container">
+        {/* <div className="login__create-container__social-container">
           <img
             className="login__create-container__social-container--facebook-icon"
             src={facebook}
@@ -77,34 +147,35 @@ const AuthComponent = () => {
             src={linkedin}
             alt=""
           />
-        </div>
+        </div> */}
         <span className="login__create-container--info-text">
           or use email for your registration
         </span>
         <div className="login__create-container__form-container">
           <form
             className="login__create-container__form-container__form"
-            onSubmit={(e) => {
-              e.preventDefault();
-            }}
+            onSubmit={handleSubmit}
           >
             <input
               className="login__create-container__form-container__form--name"
               type="text"
               placeholder="Name"
-              required
+              name="name"
+              onChange={handleChange}
             />
             <input
               className="login__create-container__form-container__form--email"
               type="email"
               placeholder="Email"
-              required
+              name="email"
+              onChange={handleChange}
             />
             <input
               className="login__create-container__form-container__form--password"
               type="password"
               placeholder="Password"
-              required
+              name="password"
+              onChange={handleChange}
             />
             <button className="login__create-container__form-container__form--submit">
               Sign Up
@@ -114,7 +185,7 @@ const AuthComponent = () => {
       </div>
       <div
         className={`login__login-container ${
-          !login
+          !isLogin
             ? "login__login-container--active"
             : "login__login-container--inactive"
         }`}
@@ -123,12 +194,12 @@ const AuthComponent = () => {
           <img
             className="login__login-container__logo-container--image"
             src={logo}
-            alt="Budwriter"
+            alt="Dmmee logo"
           />
-          Budwriter
+          Dmmee
         </div>
         <div className="login__login-container__main-container">
-          <div className="login__login-container__main-container__social-container">
+          {/* <div className="login__login-container__main-container__social-container">
             <img
               className="login__login-container__main-container__social-container--facebook-icon"
               src={facebook}
@@ -144,30 +215,28 @@ const AuthComponent = () => {
               src={linkedin}
               alt=""
             />
-          </div>
+          </div> */}
           <span className="login__login-container__main-container--info-text">
             or use email for your login
           </span>
           <div className="login__login-container__main-container__form-container">
             <form
               className="login__login-container__main-container__form-container__form"
-              onSubmit={(e) => {
-                e.preventDefault();
-              }}
+              onSubmit={handleSubmit}
             >
               <input
                 className="login__login-container__main-container__form-container__form--email"
                 type="email"
                 placeholder="Email"
-                value={signInForm.email}
-                required
+                name="email"
+                onChange={handleChange}
               />
               <input
                 className="login__login-container__main-container__form-container__form--password"
                 type="password"
+                name="password"
                 placeholder="Password"
-                value={signInForm.password}
-                required
+                onChange={handleChange}
               />
               <button className="login__login-container__main-container__form-container__form--submit">
                 Sign In
@@ -178,7 +247,7 @@ const AuthComponent = () => {
       </div>
       <div
         className={`login__hello-container ${
-          !login
+          !isLogin
             ? "login__hello-container--active"
             : "login__hello-container--inactive"
         }`}
@@ -193,13 +262,23 @@ const AuthComponent = () => {
         </div>
         <div
           onClick={() => {
-            setLogin(!login);
+            setIsLogin(!isLogin);
           }}
           className="login__welcome-back__main-container__button-container"
         >
           Sign Up
         </div>
       </div>
+      {error && (
+        <Notify
+          heading="authentication error"
+          message={error}
+          type="error"
+          isActive={error ? true : false}
+        />
+      )}
+
+      {isLoading && <LoadingSpinner />}
     </div>
   );
 };

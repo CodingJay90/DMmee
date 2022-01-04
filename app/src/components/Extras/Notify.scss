@@ -1,0 +1,54 @@
+.notify {
+  width: 40vh;
+  position: fixed;
+  top: 5%;
+  right: 0;
+  z-index: 22;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  transition: 0.2s linear;
+  transform: translateX(100%);
+
+  &__container {
+    width: 90%;
+    margin: auto;
+
+    &--success {
+      background: url(../../assets/images/levi-midnight-4YdAsyI9j3A-unsplash.jpg);
+      background-size: cover;
+      background-position: center;
+    }
+    &--error {
+      background: url(../../assets/images/pngBackground.png);
+      background-size: cover;
+      background-position: center;
+    }
+    &--info {
+      background: url(../../assets/images/daniele-levis-pelusi-mkMSXR86kYY-unsplash.jpg);
+      background-size: cover;
+      background-position: center;
+    }
+  }
+
+  &__overlay {
+    background-color: rgba(0, 0, 0, 0.685);
+  }
+
+  h4 {
+    color: #fff;
+    padding: 1rem 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.178);
+    text-transform: capitalize;
+    font-size: 1rem;
+    letter-spacing: 1px;
+  }
+  p {
+    color: #fff;
+    padding: 1rem;
+    text-transform: capitalize;
+  }
+
+  &--active {
+    transform: translateX(0);
+  }
+}
