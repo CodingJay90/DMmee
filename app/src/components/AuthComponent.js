@@ -16,7 +16,10 @@ import {
 import { useNavigate } from "react-router-dom";
 import Notify from "./Extras/Notify";
 import { LoadingSpinner } from "./Extras/LoadingSpinner";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 const AuthComponent = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [authForm, setAuthForm] = useState({
@@ -36,14 +39,14 @@ const AuthComponent = () => {
   async function signUpLogic() {
     const colRef = collection(db, "users");
     const result = await createUserWithEmailAndPassword(auth, email, password);
-    // await setDoc(doc(db, "users", result.user.uid), {
+    // await addDoc(colRef, {
     //   uid: result.user.uid,
     //   name,
     //   email,
     //   createdAt: Timestamp.fromDate(new Date()),
     //   isOnline: true,
     // });
-    await addDoc(colRef, {
+    await setDoc(doc(db, "users", result.user.uid), {
       uid: result.user.uid,
       name,
       email,
@@ -54,8 +57,10 @@ const AuthComponent = () => {
   }
   async function signInLogic() {
     const result = await signInWithEmailAndPassword(auth, email, password);
-
-    await updateDoc(doc(db, "users", result.user.uid), {
+    console.log(result);
+    console.log(result.user.uid);
+    const colRef = doc(db, "users", result.user.uid);
+    await updateDoc(colRef, {
       isOnline: true,
     });
     console.log(result);
@@ -73,6 +78,7 @@ const AuthComponent = () => {
       if (isLogin) await signUpLogic();
       setIsLoading(false);
       setError(null);
+      console.log(error, "hhh");
       if (!error) navigate("/");
     } catch (error) {
       setIsLoading(false);
