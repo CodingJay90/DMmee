@@ -4,7 +4,7 @@ import facebook from "../assets/images/facebook.svg";
 import google from "../assets/images/google.svg";
 import linkedin from "../assets/images/linkedin.svg";
 import "./Auth.scss";
-import { auth, db } from "../config/firebase";
+import { auth, db, storage } from "../config/firebase";
 import {
   addDoc,
   collection,
@@ -20,6 +20,12 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from "firebase/auth";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import avatar1 from "../assets/images/avatar1.png";
+import avatar2 from "../assets/images/avatar2.png";
+import avatar3 from "../assets/images/avatar-3.jpg";
+import avatar4 from "../assets/images/avavtar-4.png";
+import avatar5 from "../assets/images/avatar-5.png";
 const AuthComponent = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [authForm, setAuthForm] = useState({
@@ -31,6 +37,13 @@ const AuthComponent = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const { name, email, password } = authForm;
+  const imagesArray = [
+    "https://emedia1.nhs.wales/HEIW2/cache/file/F4C33EF0-69EE-4445-94018B01ADCF6FD4.png",
+    "https://media.istockphoto.com/vectors/anonymous-gender-neutral-face-avatar-incognito-head-silhouette-vector-id1334533935?b=1&k=20&m=1334533935&s=170667a&w=0&h=dzIHGt2seqmK-AgONwY52LkjHiv651roemNHDgoBaHI=",
+    "https://e7.pngegg.com/pngimages/529/6/png-clipart-computer-icons-airplane-smiley-person-icon-yellow.png",
+    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQYBgkmyXnekpz06gd_1dgDuB_fXCwntWbsUzWWpk7rQd_1wcqFdZyVgv6p-c2_NQtIxPM&usqp=CAU",
+    "https://pngimage.net/wp-content/uploads/2019/05/human-avatar-png-4.png",
+  ];
 
   const handleChange = (e) => {
     setAuthForm({ ...authForm, [e.target.name]: e.target.value });
@@ -39,19 +52,13 @@ const AuthComponent = () => {
   async function signUpLogic() {
     const colRef = collection(db, "users");
     const result = await createUserWithEmailAndPassword(auth, email, password);
-    // await addDoc(colRef, {
-    //   uid: result.user.uid,
-    //   name,
-    //   email,
-    //   createdAt: Timestamp.fromDate(new Date()),
-    //   isOnline: true,
-    // });
     await setDoc(doc(db, "users", result.user.uid), {
       uid: result.user.uid,
       name,
       email,
       createdAt: Timestamp.fromDate(new Date()),
       isOnline: true,
+      profilePic: imagesArray[Math.floor(Math.random() * imagesArray.length)],
     });
     console.log(result);
   }

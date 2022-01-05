@@ -1,17 +1,23 @@
 import { createContext, useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../config/firebase";
+import { auth, db } from "../config/firebase";
 import { LoadingSpinner } from "../components/Extras/LoadingSpinner";
+import { collection, doc, getDoc, query, where } from "firebase/firestore";
 
 export const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    onAuthStateChanged(auth, async (authUser) => {
+      setUser(authUser);
+      console.log(authUser, "user");
+      const docRef = doc(db, "users", authUser.uid);
+      const docSnap = await getDoc(docRef);
+      setCurrentUser(docSnap.data());
       setLoading(false);
     });
   }, []);
@@ -20,7 +26,9 @@ const AuthProvider = ({ children }) => {
     return <LoadingSpinner />;
   }
   return (
-    <AuthContext.Provider value={{ user }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, currentUser }}>
+      {children}
+    </AuthContext.Provider>
   );
 };
 

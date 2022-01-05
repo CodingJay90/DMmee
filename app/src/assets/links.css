@@ -1,13 +1,5 @@
 @import url(https://fonts.googleapis.com/css?family=Open+Sans);
 
-h1:before {
-  content: "// ";
-}
-h1 {
-  font-size: 3em;
-  color: #fefefe;
-  text-transform: lowercase;
-}
 .wrapper {
   margin: 3em 0;
 }

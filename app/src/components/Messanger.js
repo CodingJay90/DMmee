@@ -1,7 +1,13 @@
 import React from "react";
 import { GrAttachment, GrSend } from "react-icons/gr";
 
-const Messanger = ({ handleSendMsg, text, setText, setImg }) => {
+const Messanger = ({
+  handleSendMsg,
+  text,
+  setText,
+  setImg,
+  handleUploadChange,
+}) => {
   return (
     <div className="message__form">
       <div className="message__form-container">
@@ -9,10 +15,9 @@ const Messanger = ({ handleSendMsg, text, setText, setImg }) => {
           <label htmlFor="img">
             <GrAttachment />
             <input
-              onChange={(e) => setImg(e.target.files[0])}
+              onChange={handleUploadChange}
               type="file"
               id="img"
-              accept="image/*"
               style={{ display: "none" }}
             />
           </label>
@@ -24,8 +29,8 @@ const Messanger = ({ handleSendMsg, text, setText, setImg }) => {
               onChange={(e) => setText(e.target.value)}
             />
           </div>
-          <button class="button button--shikoba button--text-medium button--round-l button--inverted">
-            <i class="button__icon icon icon-camera"></i>
+          <button className="button button--shikoba button--text-medium button--round-l button--inverted">
+            <i className="button__icon icon icon-camera"></i>
             <span>Send</span>
           </button>
         </form>

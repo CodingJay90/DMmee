@@ -18,13 +18,22 @@ import Message from "./Message";
 import Messanger from "./Messanger";
 import User from "./User";
 import { FiEdit2 } from "react-icons/fi";
+import Modal from "./Extras/Modal";
+import SelectedUserBlock from "./SelectedUserBlock";
+import SideBar from "./SideBar";
 
 const HomePageComponent = () => {
   const [text, setText] = useState("");
   const [img, setImg] = useState("");
+  const [fileType, setFileType] = useState("");
+  const [file, setFile] = useState("");
   const [messages, setMessages] = useState([]);
+  const [attachments, setAttachments] = useState([]);
   const [users, setUsers] = useState([]);
   const [chatDetails, setChatDetails] = useState("");
+  const [imgPreview, setImgPreview] = useState("");
+  const [messageFilterQuery, setMessageFilterQuery] = useState("");
+  const [userFilterQuery, setUserFilterQuery] = useState("");
 
   const currUserId = auth.currentUser.uid;
   useEffect(() => {
@@ -61,8 +70,10 @@ const HomePageComponent = () => {
       snapShot.forEach((doc) => {
         msgs.push(doc.data());
       });
-      console.log(msgs, "messages");
       setMessages(msgs);
+      const filtered = msgs.filter((i) => i.media.length);
+      console.log(filtered);
+      setAttachments(filtered);
     });
 
     const docSnap = await getDoc(doc(db, "lastMsg", id));
@@ -70,7 +81,7 @@ const HomePageComponent = () => {
       await updateDoc(doc(db, "lastMsg", id), { unread: false });
     }
     console.log(selectedUserId, "sdelectedUserid");
-    console.log(id, "id");
+    console.log(attachments, "attachments");
   }
   async function handleSendMsg(e) {
     e.preventDefault();
@@ -80,12 +91,12 @@ const HomePageComponent = () => {
         ? `${currUserId + selectedUserId}`
         : `${selectedUserId + currUserId}`;
     let url;
-    if (img) {
-      const imgRef = ref(
+    if (file) {
+      const attachmentsRef = ref(
         storage,
-        `images/${new Date().getTime()} - ${img.name}`
+        `attachments/${new Date().getTime()} - ${file.name}`
       );
-      const snap = await uploadBytes(imgRef, img);
+      const snap = await uploadBytes(attachmentsRef, file);
       const dlUrl = await getDownloadURL(ref(storage, snap.ref.fullPath));
       url = dlUrl;
     }
@@ -95,6 +106,7 @@ const HomePageComponent = () => {
       to: selectedUserId,
       createdAt: Timestamp.fromDate(new Date()),
       media: url || "",
+      mediaType: fileType || "",
     });
     await setDoc(doc(db, "lastMsg", id), {
       text,
@@ -102,122 +114,132 @@ const HomePageComponent = () => {
       to: selectedUserId,
       createdAt: Timestamp.fromDate(new Date()),
       media: url || "",
+      mediaType: fileType || "",
       unread: true,
     });
     setText("");
-    setImg("");
+    setFile("");
   }
 
-  console.log(img);
+  function handleUploadChange(e) {
+    setFileType(e.target.files[0].type);
+    setFile(e.target.files[0]);
+    console.log(e.target.files[0]);
+    if (e.target.files[0]) {
+      const preview = URL.createObjectURL(e.target.files[0]);
+      setImgPreview(preview);
+      // URL.revokeObjectURL(preview);
+    }
+  }
+
+  //Filter function
+  const handleMessagesFilter = (messages) => {
+    return messages.filter(
+      (message) => message.text.toLowerCase().indexOf(messageFilterQuery) > -1
+    );
+  };
+  const handleFriendsFilter = (users) => {
+    return users.filter(
+      (user) => user.name.toLowerCase().indexOf(userFilterQuery) > -1
+    );
+  };
+
+  console.log(file);
+  console.log(imgPreview);
 
   return (
     <>
       <div className="home__wrapper">
-        <div className="home__container">
-          <div className="home__currUser">
-            <div className="home__currUser-block">
-              <div className="home__currUser-avatar">
-                <div className="home__currUser-avatar-block">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Alesso_profile.png/467px-Alesso_profile.png" />
-                </div>
-              </div>
-              <div className="home__currUser-detail">
-                <h5>David Graham</h5>
-                <p>Senior Developer</p>
-              </div>
-              <div className="home__currUser-icon">
-                <FiEdit2 />
-              </div>
-            </div>
-          </div>
-          <div className="home__users-container">
-            <div className="home__users-search">
-              <input type="text" placeholder="Search friends" />
-            </div>
-            <div className="home__users-heading">CurrentUsers</div>
-            {users.map((user) => (
-              <User
-                key={user.uid}
-                currUserId={currUserId}
-                user={user}
-                selectUser={selectUser}
-                chatDetails={chatDetails}
-                messages={messages}
-              />
-            ))}
-          </div>
-        </div>
+        <SideBar
+          users={handleFriendsFilter(users)}
+          currUserId={currUserId}
+          selectUser={selectUser}
+          messages={messages}
+          chatDetails={chatDetails}
+          setUserFilterQuery={setUserFilterQuery}
+        />
         <div className="home__messages-container">
           <div className="home__messages-block">
-            <div className="home__messages-header">
-              <div className="home__messages-avatar">
-                <img
-                  src={
-                    chatDetails.avatar ||
-                    "https://w7.pngwing.com/pngs/613/636/png-transparent-computer-icons-user-profile-male-avatar-avatar-heroes-logo-black-thumbnail.png"
-                  }
-                  alt="avatar"
-                  className="avatar"
+            {chatDetails ? (
+              <>
+                <div className="home__messages-header">
+                  <div className="home__messages-avatar">
+                    <img
+                      src={chatDetails.profilePic}
+                      alt="avatar"
+                      className="avatar"
+                    />
+                  </div>
+                  <div className="home__messages-header-name">
+                    <p> {chatDetails.name}</p>
+                    <div
+                      className={`home__messages-header-status ${
+                        chatDetails.isOnline
+                          ? "home__messages-header-status--online"
+                          : "home__messages-header-status--offline"
+                      }`}
+                    ></div>
+                  </div>
+                </div>
+                <div className="home__chatbox">
+                  <div className="home__chatBox-container">
+                    {chatDetails ? (
+                      <>
+                        {messages.length ? (
+                          handleMessagesFilter(messages).map((msg, i) => (
+                            <Message
+                              key={i}
+                              message={msg}
+                              currUserId={currUserId}
+                              chatDetails={chatDetails}
+                            />
+                          ))
+                        ) : (
+                          <h1 className="displayMessage">
+                            No Conversation with this user yet
+                          </h1>
+                        )}
+                      </>
+                    ) : (
+                      <h1 className="displayMessage">
+                        Select user to chat with
+                      </h1>
+                    )}
+                  </div>
+                </div>
+                <Messanger
+                  handleSendMsg={handleSendMsg}
+                  handleUploadChange={handleUploadChange}
+                  text={text}
+                  setText={setText}
+                  setImg={setImg}
                 />
-              </div>
-              <div className="home__messages-header-name">
-                {chatDetails.name}
-              </div>
-            </div>
-            <div className="home__chatbox">
-              <div className="home__chatBox-container">
-                {chatDetails ? (
-                  <>
-                    {messages.length
-                      ? messages.map((msg, i) => (
-                          <Message
-                            key={i}
-                            message={msg}
-                            currUserId={currUserId}
-                            chatDetails={chatDetails}
-                          />
-                        ))
-                      : null}
-                  </>
-                ) : (
-                  <h1>Select user to chat with</h1>
-                )}
-              </div>
-            </div>
-            <Messanger
-              handleSendMsg={handleSendMsg}
-              text={text}
-              setText={setText}
-              setImg={setImg}
-            />
+              </>
+            ) : (
+              <h1 className="displayMessage">Select A user to start a convo</h1>
+            )}
           </div>
         </div>
         <div className="user__summary">
-          <div className="user__summary-container">
-            <div className="user__summary-search">
-              <input tyope="text" placeholder="search message" />
-            </div>
-            <div className="user__summary-img">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Alesso_profile.png/467px-Alesso_profile.png" />
-            </div>
-            <div className="user__summary-name">Jean Claude</div>
-            <div className="user__summary-work">Junior Developer</div>
-            <div className="user__summary-attachments">
-              <div className="user__summary-attachments-group">
-                <div>
-                  https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Alesso_profile.png/467px-Alesso_profile.png"
-                </div>
-                <div>
-                  https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Alesso_profile.png/467px-Alesso_profile.png"
-                </div>
-                <div>
-                  https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Alesso_profile.png/467px-Alesso_profile.png"
-                </div>
-              </div>
-            </div>
-          </div>
+          {chatDetails && (
+            <SelectedUserBlock
+              setMessageFilterQuery={setMessageFilterQuery}
+              attachments={attachments}
+              user={chatDetails}
+            />
+          )}
         </div>
       </div>
+      {file && imgPreview && (
+        <Modal
+          handleSendMsg={handleSendMsg}
+          setFile={setFile}
+          setText={setText}
+          fileType={fileType}
+          imgPreview={imgPreview}
+          img="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Alesso_profile.png/467px-Alesso_profile.png"
+        />
+      )}
     </>
   );
 };

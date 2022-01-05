@@ -1,12 +1,13 @@
 import { doc, onSnapshot } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { db } from "../config/firebase";
+import { TiTick } from "react-icons/ti";
 
 const User = ({ user, currUserId, chatDetails, selectUser, messages }) => {
-  const { name, avatar, uid } = user;
+  const { name, profilePic, uid, isOnline } = user;
   const selectedUserId = uid;
   const [data, setData] = useState("");
-  console.log(messages);
+  // console.log(data);
 
   useEffect(() => {
     const id =
@@ -26,27 +27,41 @@ const User = ({ user, currUserId, chatDetails, selectUser, messages }) => {
           <div className="home__users-avatar-block">
             <img
               src={
-                avatar ||
+                profilePic ||
                 "https://w7.pngwing.com/pngs/613/636/png-transparent-computer-icons-user-profile-male-avatar-avatar-heroes-logo-black-thumbnail.png"
               }
               alt="avatar"
               className="avatar"
             />
+            <div
+              className={`home__users-avatar-status ${
+                isOnline
+                  ? "home__users-avatar-status--online"
+                  : "home__users-avatar-status--offline"
+              }`}
+            ></div>
           </div>
         </div>
         <div className="home__users-name">
           <h5>{name}</h5>
           <p>
-            <strong>{data.from === currUserId ? "Me:" : null}</strong>
-            {data.text}
+            <strong>{data?.from === currUserId ? <TiTick /> : null}</strong>
+            {data?.text?.length > 15
+              ? data?.text.substring(0, 15) + "..."
+              : data?.text}
           </p>
         </div>
         <div className="home__users-time">
           <p>10: 30am</p>
-          <span>1</span>
+          {/* <span>1</span> */}
         </div>
       </div>
-      {/* <div
+    </>
+  );
+};
+
+{
+  /* <div
         className={`user_wrapper ${
           chatDetails.name === user.name && "selected_user"
         }`}
@@ -92,9 +107,7 @@ const User = ({ user, currUserId, chatDetails, selectUser, messages }) => {
           alt="avatar"
           className="avatar sm_screen"
         />
-      </div> */}
-    </>
-  );
-};
+      </div> */
+}
 
 export default User;
