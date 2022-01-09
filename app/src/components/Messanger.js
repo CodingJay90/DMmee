@@ -29,7 +29,10 @@ const Messanger = ({
               onChange={(e) => setText(e.target.value)}
             />
           </div>
-          <button className="button button--shikoba button--text-medium button--round-l button--inverted">
+          <button
+            disabled={text ? false : true}
+            className="button button--shikoba button--text-medium button--round-l button--inverted"
+          >
             <i className="button__icon icon icon-camera"></i>
             <span>Send</span>
           </button>

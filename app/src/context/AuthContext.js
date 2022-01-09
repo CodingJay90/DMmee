@@ -15,9 +15,11 @@ const AuthProvider = ({ children }) => {
     onAuthStateChanged(auth, async (authUser) => {
       setUser(authUser);
       console.log(authUser, "user");
-      const docRef = doc(db, "users", authUser.uid);
-      const docSnap = await getDoc(docRef);
-      setCurrentUser(docSnap.data());
+      if (authUser) {
+        const docRef = doc(db, "users", authUser?.uid);
+        const docSnap = await getDoc(docRef);
+        setCurrentUser(docSnap.data());
+      }
       setLoading(false);
     });
   }, []);

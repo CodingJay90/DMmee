@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import logo from "../assets/images/logo.png";
 import facebook from "../assets/images/facebook.svg";
 import google from "../assets/images/google.svg";
@@ -32,11 +32,22 @@ const AuthComponent = () => {
     name: "",
     email: "",
     password: "",
+    title: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const { name, email, password } = authForm;
+  const { name, email, password, title } = authForm;
+  const [time, setTime] = useState(7000);
+  const colorsArray = [
+    "#000",
+    "#60204a",
+    "#221954",
+    "#165cb3",
+    "#127063",
+    "#165e09",
+    "#81b3d5",
+  ];
   const imagesArray = [
     "https://emedia1.nhs.wales/HEIW2/cache/file/F4C33EF0-69EE-4445-94018B01ADCF6FD4.png",
     "https://media.istockphoto.com/vectors/anonymous-gender-neutral-face-avatar-incognito-head-silhouette-vector-id1334533935?b=1&k=20&m=1334533935&s=170667a&w=0&h=dzIHGt2seqmK-AgONwY52LkjHiv651roemNHDgoBaHI=",
@@ -56,6 +67,7 @@ const AuthComponent = () => {
       uid: result.user.uid,
       name,
       email,
+      title,
       createdAt: Timestamp.fromDate(new Date()),
       isOnline: true,
       profilePic: imagesArray[Math.floor(Math.random() * imagesArray.length)],
@@ -85,7 +97,6 @@ const AuthComponent = () => {
       if (isLogin) await signUpLogic();
       setIsLoading(false);
       setError(null);
-      console.log(error, "hhh");
       if (!error) navigate("/");
     } catch (error) {
       setIsLoading(false);
@@ -93,6 +104,18 @@ const AuthComponent = () => {
       setError(error.message);
     }
   }
+
+  useEffect(() => {
+    setInterval(() => {
+      console.log("logging");
+      document.documentElement.style.setProperty(
+        "--dynamicColor",
+        colorsArray[Math.floor(Math.random() * colorsArray.length)]
+      );
+      setTime(7000);
+    }, time);
+  }, [time]);
+
   return (
     <div className="login">
       <div
@@ -123,7 +146,7 @@ const AuthComponent = () => {
               Welcome Back!
             </span>
             <span className="login__welcome-back__main-container__text-container--secondary">
-              To keep sharing your work with us, please log in.
+              To start dmming your friends, please log in.
             </span>
           </div>
           <div
@@ -144,25 +167,8 @@ const AuthComponent = () => {
         }`}
       >
         Create Account
-        {/* <div className="login__create-container__social-container">
-          <img
-            className="login__create-container__social-container--facebook-icon"
-            src={facebook}
-            alt=""
-          />
-          <img
-            className="login__create-container__social-container--google-icon"
-            src={google}
-            alt=""
-          />
-          <img
-            className="login__create-container__social-container--linkedin-icon"
-            src={linkedin}
-            alt=""
-          />
-        </div> */}
         <span className="login__create-container--info-text">
-          or use email for your registration
+          All fields are required
         </span>
         <div className="login__create-container__form-container">
           <form
@@ -174,6 +180,15 @@ const AuthComponent = () => {
               type="text"
               placeholder="Name"
               name="name"
+              required
+              onChange={handleChange}
+            />
+            <input
+              className="login__create-container__form-container__form--name"
+              type="text"
+              placeholder="Enter title e.g Web Developer"
+              name="title"
+              required
               onChange={handleChange}
             />
             <input
@@ -212,23 +227,6 @@ const AuthComponent = () => {
           Dmmee
         </div>
         <div className="login__login-container__main-container">
-          {/* <div className="login__login-container__main-container__social-container">
-            <img
-              className="login__login-container__main-container__social-container--facebook-icon"
-              src={facebook}
-              alt=""
-            />
-            <img
-              className="login__login-container__main-container__social-container--google-icon"
-              src={google}
-              alt=""
-            />
-            <img
-              className="login__login-container__main-container__social-container--linkedin-icon"
-              src={linkedin}
-              alt=""
-            />
-          </div> */}
           <span className="login__login-container__main-container--info-text">
             or use email for your login
           </span>

@@ -59,7 +59,7 @@ const ProfileCompoennt = () => {
               <div class="profile__details">
                 <h2>{user.name}</h2>
                 <h4>{user.email}</h4>
-                <p>Software Developer</p>
+                <p>{user.title}</p>
               </div>
               <div class="profile__upload upload-icon">
                 <div>

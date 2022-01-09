@@ -29,7 +29,7 @@ const Navbar = () => {
           {user ? (
             <>
               <Link className="navbar__links tenth before after" to="/profile">
-                Profile
+                {user?.email}
               </Link>
               <button
                 className="navbar__btn button button--pipaluk button--text-thick"
